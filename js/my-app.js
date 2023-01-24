@@ -11,6 +11,50 @@ var mainView = myApp.addView('.view-main', {
     dynamicNavbar: true
 });
 
+function loadData(obj){
+    $$('#listadopaises').html('');   
+    let token = localStorage.token;
+    $$.each(obj.data, function (i, item) {   
+        let len = item.length                 
+        for (i = 0; i < len; i++){                         
+            let lista = '<li class="item-content"><div class="card facebook-card"><div class="card-header no-border"><div class="facebook-name">'+item[i].nombre+'</div><div class="facebook-date">'+item[i].moneda+'</div></div><div class="card-content"><img src="'+item[i].bandera+'" width="100%"></div><div class="card-footer no-border"><a href="#" data="' + btoa(JSON.stringify(item[i])) + '" class="link actualizar-' + item[i].codigo +'">Actualizar</a><a href="#" data="' + item[i].codigo + '" class="link delete-' + item[i].codigo +'">Eliminar</a></div></div></li>'
+            $$('#listadopaises').append(lista);
+            $$('.actualizar-' + item[i].codigo).on('click', function(e){
+                e.preventDefault();
+                let data = $$(this).attr('data')
+                localStorage.setItem("paisUpdate", data);
+                mainView.router.load({url:'update.html'});
+            })
+            $$('.delete-' + item[i].codigo).on('click', function () {
+                let codigo = $$(this).attr('data')
+                //if(codigo === item[i].codigo ){
+                    myApp.confirm('Esta seguro que desea borrar este pais?', 'Priverion', function () {
+                        $$.ajax({
+                            url: 'https://apitest.grupoqimera.co/index.php/api/sibco/paises/' + codigo,
+                            method: 'DELETE',	        
+                            dataType: 'json',
+                            headers : {
+                                'content-type' : 'application/json',
+                                'authorization' : token
+                            },
+                            success: function(response){                                 
+                                myApp.alert('Pais borrado','Priverion');   
+                                mainView.router.refreshPage();                                                           
+                            },
+                            error: function(xhr, status){
+                                    console.log('Error: '+JSON.stringify(xhr));
+                                    console.log('ErrorStatus: '+JSON.stringify(status));
+                            }
+                        });
+                        
+                    });
+                //}                
+            });
+            $$('.image-change-' + item[i].codigo).on('change', function(){})
+        } 
+    }); 
+}
+
 // Handle Cordova Device Ready Event
 $$(document).on('deviceready', function() {
     if (localStorage.token) {
@@ -101,42 +145,7 @@ myApp.onPageInit('dashboard', function (page) {
         },
         success: function(response){                                 
                 var obj = response;            
-                $$.each(obj.data, function (i, item) {   
-                    let len = item.length                 
-                    for (i = 0; i < len; i++){                         
-                        let lista = '<li class="item-content"><div class="card facebook-card"><div class="card-header no-border"><div class="facebook-name">'+item[i].nombre+'</div><div class="facebook-date">'+item[i].moneda+'</div></div><div class="card-content"><img src="'+item[i].bandera+'" width="100%"></div><div class="card-footer no-border"><a href="#" data="' + btoa(JSON.stringify(item[i])) + '" class="link actualizar">Actualizar</a><a href="#" data="' + item[i].codigo + '" class="link delete">Eliminar</a></div></div></li>'
-                        $$('#listadopaises').append(lista);
-                        $$('.actualizar').on('click', function(e){
-                            e.preventDefault();
-                            let data = $$(this).attr('data')
-                            localStorage.setItem("paisUpdate", data);
-                            mainView.router.load({url:'update.html'});
-                        })
-                        $$('.delete').on('click', function () {
-                            let codigo = $$(this).attr('data')
-                            myApp.confirm('Esta seguro que desea borrar este pais?', 'Priverion', function () {
-                                $$.ajax({
-                                    url: 'https://apitest.grupoqimera.co/index.php/api/sibco/paises/' + codigo,
-                                    method: 'DELETE',	        
-                                    dataType: 'json',
-                                    headers : {
-                                        'content-type' : 'application/json',
-                                        'authorization' : token
-                                    },
-                                    success: function(response){                                 
-                                        myApp.alert('Pais borrado','Priverion');   
-                                        mainView.router.refreshPage();                                                           
-                                    },
-                                    error: function(xhr, status){
-                                            console.log('Error: '+JSON.stringify(xhr));
-                                            console.log('ErrorStatus: '+JSON.stringify(status));
-                                    }
-                                });
-                                
-                            });
-                        });
-                    } 
-                });      
+                loadData(obj)    
         },
         error: function(xhr, status){
                 console.log('Error: '+JSON.stringify(xhr));
@@ -144,7 +153,31 @@ myApp.onPageInit('dashboard', function (page) {
         }
     });   
 
-    
+    $$('#btnFnPais').on('click', function(e){
+        e.preventDefault()
+        let codigo = $$('#fn-codigo').val();
+        console.log(codigo)
+        $$.ajax({
+            url: 'https://apitest.grupoqimera.co/index.php/api/sibco/paises/' + codigo,
+            method: 'GET',	        
+            dataType: 'json',
+            headers : {
+                'content-type' : 'application/json',
+                'authorization' : token
+            },
+            success: function(response){                                 
+                    var obj = response;  
+                    console.log(obj)          
+                    loadData(obj)    
+            },
+            error: function(xhr, status){
+                    console.log('Error: '+JSON.stringify(xhr));
+                    console.log('ErrorStatus: '+JSON.stringify(status));
+            }
+        });
+
+    })
+
 })
 
 myApp.onPageInit('login-screen', function (page) {
