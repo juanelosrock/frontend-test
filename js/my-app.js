@@ -18,6 +18,32 @@ $$(document).on('deviceready', function() {
 
 myApp.onPageInit('dashboard', function (page) {
     
+    let token = localStorage.token;
+
+    $$.ajax({
+        url: 'https://apitest.grupoqimera.co/index.php/api/sibco/paises',
+        method: 'GET',	        
+        dataType: 'json',
+        headers : {
+            'content-type' : 'application/json',
+            'authorization' : token
+        },
+        success: function(response){                                 
+                var obj = response;            
+                $$.each(obj.data, function (i, item) {   
+                    let len = item.length                 
+                    for (i = 0; i < len; i++){                         
+                        let lista = '<li class="item-content"><div class="card facebook-card"><div class="card-header no-border"><div class="facebook-name">'+item[i].nombre+'</div><div class="facebook-date">'+item[i].moneda+'</div></div><div class="card-content"><img src="'+item[i].bandera+'" width="100%"></div><div class="card-footer no-border"><a href="#" class="link">Actualizar</a><a href="#" class="link">Eliminar</a></div></div></li>'
+                        $$('#listadopaises').append(lista);
+                    } 
+                });      
+        },
+        error: function(xhr, status){
+                console.log('Error: '+JSON.stringify(xhr));
+                console.log('ErrorStatus: '+JSON.stringify(status));
+        }
+    });
+
 })
 
 myApp.onPageInit('login-screen', function (page) {
