@@ -16,6 +16,38 @@ $$(document).on('deviceready', function() {
 
 });
 
+myApp.onPageInit('create', function (page) {
+    
+    let token = localStorage.token;
+    
+    $$('#btnAddPais').on('click', function(e){
+        e.preventDefault();
+        let codigo = $$('#codigo').val();
+        let nombre = $$('#nombre').val();
+        let moneda = $$('#moneda').val();
+        let bandera = $$('#bandera').val();
+
+        $$.ajax({
+            url: 'https://apitest.grupoqimera.co/index.php/api/sibco/paises',
+            method: 'PUT',	        
+            dataType: 'json',
+            data: '{ "codigo": "' + codigo + '", "nombre" : "' + nombre + '", "moneda": "' + moneda + '", "bandera": "' + bandera + '" }',
+            headers : {
+                'content-type' : 'application/json',
+                'authorization' : token
+            },
+            success: function(response){                                                                
+                mainView.router.load({url:'dashboard.html'});
+            },
+            error: function(xhr, status){
+                    console.log('Error: '+JSON.stringify(xhr));
+                    console.log('ErrorStatus: '+JSON.stringify(status));
+            }
+        }); 
+    })
+
+})
+
 myApp.onPageInit('dashboard', function (page) {
     
     let token = localStorage.token;
@@ -42,7 +74,7 @@ myApp.onPageInit('dashboard', function (page) {
                 console.log('Error: '+JSON.stringify(xhr));
                 console.log('ErrorStatus: '+JSON.stringify(status));
         }
-    });
+    });   
 
 })
 
@@ -77,3 +109,4 @@ myApp.onPageInit('login-screen', function (page) {
                       
     });   
   }); 
+  
