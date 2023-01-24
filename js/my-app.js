@@ -13,7 +13,9 @@ var mainView = myApp.addView('.view-main', {
 
 // Handle Cordova Device Ready Event
 $$(document).on('deviceready', function() {
-
+    if (localStorage.token) {
+        mainView.router.load({url:'dashboard.html'});
+    }
 });
 
 myApp.onPageInit('create', function (page) {
@@ -30,6 +32,43 @@ myApp.onPageInit('create', function (page) {
         $$.ajax({
             url: 'https://apitest.grupoqimera.co/index.php/api/sibco/paises',
             method: 'PUT',	        
+            dataType: 'json',
+            data: '{ "codigo": "' + codigo + '", "nombre" : "' + nombre + '", "moneda": "' + moneda + '", "bandera": "' + bandera + '" }',
+            headers : {
+                'content-type' : 'application/json',
+                'authorization' : token
+            },
+            success: function(response){                                                                
+                mainView.router.load({url:'dashboard.html'});
+            },
+            error: function(xhr, status){
+                    console.log('Error: '+JSON.stringify(xhr));
+                    console.log('ErrorStatus: '+JSON.stringify(status));
+            }
+        }); 
+    })
+
+})
+
+myApp.onPageInit('update', function (page) {
+    
+    let token = localStorage.token;
+    let data = JSON.parse(atob(localStorage.paisUpdate));    
+
+    $$('#act-codigo').val(data.codigo);
+    $$('#act-nombre').val(data.nombre);
+    $$('#act-moneda').val(data.moneda);
+    
+    $$('#btnActPais').on('click', function(e){
+        e.preventDefault();
+        let codigo = $$('#act-codigo').val();
+        let nombre = $$('#act-nombre').val();
+        let moneda = $$('#act-moneda').val();
+        let bandera = $$('#act-bandera').val();
+
+        $$.ajax({
+            url: 'https://apitest.grupoqimera.co/index.php/api/sibco/paises',
+            method: 'POST',	        
             dataType: 'json',
             data: '{ "codigo": "' + codigo + '", "nombre" : "' + nombre + '", "moneda": "' + moneda + '", "bandera": "' + bandera + '" }',
             headers : {
@@ -65,8 +104,19 @@ myApp.onPageInit('dashboard', function (page) {
                 $$.each(obj.data, function (i, item) {   
                     let len = item.length                 
                     for (i = 0; i < len; i++){                         
-                        let lista = '<li class="item-content"><div class="card facebook-card"><div class="card-header no-border"><div class="facebook-name">'+item[i].nombre+'</div><div class="facebook-date">'+item[i].moneda+'</div></div><div class="card-content"><img src="'+item[i].bandera+'" width="100%"></div><div class="card-footer no-border"><a href="#" class="link">Actualizar</a><a href="#" class="link">Eliminar</a></div></div></li>'
+                        let lista = '<li class="item-content"><div class="card facebook-card"><div class="card-header no-border"><div class="facebook-name">'+item[i].nombre+'</div><div class="facebook-date">'+item[i].moneda+'</div></div><div class="card-content"><img src="'+item[i].bandera+'" width="100%"></div><div class="card-footer no-border"><a href="#" data="' + btoa(JSON.stringify(item[i])) + '" class="link actualizar">Actualizar</a><a href="#" data="' + item[i].codigo + '" class="link delete">Eliminar</a></div></div></li>'
                         $$('#listadopaises').append(lista);
+                        $$('.actualizar').on('click', function(e){
+                            e.preventDefault();
+                            let data = $$(this).attr('data')
+                            localStorage.setItem("paisUpdate", data);
+                            mainView.router.load({url:'update.html'});
+                        })
+                        $$('.delete').on('click', function () {
+                            myApp.confirm('Esta seguro que desea borrar este pais?', 'Priverion', function () {
+                                myApp.alert('Pais borrado','Priverion');
+                            });
+                        });
                     } 
                 });      
         },
@@ -76,6 +126,7 @@ myApp.onPageInit('dashboard', function (page) {
         }
     });   
 
+    
 })
 
 myApp.onPageInit('login-screen', function (page) {
