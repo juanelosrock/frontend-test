@@ -49,8 +49,7 @@ function loadData(obj){
                         
                     });
                 //}                
-            });
-            $$('.image-change-' + item[i].codigo).on('change', function(){})
+            });            
         } 
     }); 
 }
@@ -71,7 +70,7 @@ myApp.onPageInit('create', function (page) {
         let codigo = $$('#codigo').val();
         let nombre = $$('#nombre').val();
         let moneda = $$('#moneda').val();
-        let bandera = $$('#bandera').val();
+        let bandera = $$('#viewbandera').attr('src');
 
         $$.ajax({
             url: 'https://apitest.grupoqimera.co/index.php/api/sibco/paises',
@@ -90,6 +89,17 @@ myApp.onPageInit('create', function (page) {
                     console.log('ErrorStatus: '+JSON.stringify(status));
             }
         }); 
+        
+    })
+
+    $$('#bandera').on('change', function(){
+        let f = this        
+        var filePath = document.getElementById("bandera").value;
+        var reader = new FileReader();
+        reader.onload = function (e) {			   
+            document.getElementById("viewbandera").src = e.target.result;
+        };
+        reader.readAsDataURL(f.files[0]);   
     })
 
 })
