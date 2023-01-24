@@ -113,8 +113,26 @@ myApp.onPageInit('dashboard', function (page) {
                             mainView.router.load({url:'update.html'});
                         })
                         $$('.delete').on('click', function () {
+                            let codigo = $$(this).attr('data')
                             myApp.confirm('Esta seguro que desea borrar este pais?', 'Priverion', function () {
-                                myApp.alert('Pais borrado','Priverion');
+                                $$.ajax({
+                                    url: 'https://apitest.grupoqimera.co/index.php/api/sibco/paises/' + codigo,
+                                    method: 'DELETE',	        
+                                    dataType: 'json',
+                                    headers : {
+                                        'content-type' : 'application/json',
+                                        'authorization' : token
+                                    },
+                                    success: function(response){                                 
+                                        myApp.alert('Pais borrado','Priverion');   
+                                        mainView.router.refreshPage();                                                           
+                                    },
+                                    error: function(xhr, status){
+                                            console.log('Error: '+JSON.stringify(xhr));
+                                            console.log('ErrorStatus: '+JSON.stringify(status));
+                                    }
+                                });
+                                
                             });
                         });
                     } 
